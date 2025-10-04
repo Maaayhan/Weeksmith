@@ -1,7 +1,6 @@
 # Kanban Board (Initial Setup)
 
 ## Backlog
-- A-1-kanban-scaffolding
 - A-2-ci-setup
 - A-3-data-model-migrations
 - A-4-auth-rls-baseline
@@ -20,7 +19,7 @@
 - _None_
 
 ## In Progress
-- _None_
+- A-1-kanban-scaffolding
 
 ## In Review
 - _None_

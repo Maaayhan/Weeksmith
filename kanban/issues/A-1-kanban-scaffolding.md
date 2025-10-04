@@ -48,10 +48,26 @@ Set up the repository-backed Kanban system, templates, and initial documentation
 ## Design Notes & Decisions
 
 ## Implementation Log
-- YYYY-MM-DD: 
+UTC 2025-10-04 11:25  branch=feature/A-1-kanban-scaffolding
+$ git checkout -b feature/A-1-kanban-scaffolding
+Result: OK
+
+UTC 2025-10-04 11:27
+Action: Update kanban board to move A-1 to In Progress
+Expected: Backlog removes A-1; In Progress lists A-1-kanban-scaffolding
+Actual: OK
+Files: kanban/board.md
+
+UTC 2025-10-04 11:29
+Action: Log progress in issue Implementation Log and kanban daily log
+Expected: Issue history captures branch setup; daily log shows current focus
+Actual: OK
+Files: kanban/issues/A-1-kanban-scaffolding.md, kanban/daily.md
 
 ## Commands Executed
-- 
+- `git checkout -b feature/A-1-kanban-scaffolding`
+- `apply_patch` updates to kanban/board.md
+- `apply_patch` updates to kanban/issues/A-1-kanban-scaffolding.md and kanban/daily.md
 
 ## Test Evidence
 - 
