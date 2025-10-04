@@ -43,7 +43,6 @@ jobs:
 
   lint:
     name: Lint
-    if: ${{ hashFiles('package.json') != '' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -87,16 +86,12 @@ jobs:
           version: 9
       - name: Install dependencies
         run: ${{ steps.pm.outputs.install }}
-      - name: Detect lint script
-        id: scripts
-        run: |
-          node -e "const fs=require('fs');const pkg=JSON.parse(fs.readFileSync('package.json','utf8'));if(!pkg.scripts||!pkg.scripts.lint){process.exit(1);}"
       - name: Run lint
+        if: ${{ hashFiles('package.json') != '' }}
         run: ${{ steps.pm.outputs['run-script'] }} lint
 
   typecheck:
     name: Type Check
-    if: ${{ hashFiles('package.json') != '' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -104,6 +99,7 @@ jobs:
       - name: Detect package manager
         id: pm
         run: |
+          # same detection script as lint
           if [ -f pnpm-lock.yaml ]; then
             echo "manager=pnpm" >> "$GITHUB_OUTPUT"
             echo "cache=pnpm" >> "$GITHUB_OUTPUT"
@@ -140,15 +136,12 @@ jobs:
           version: 9
       - name: Install dependencies
         run: ${{ steps.pm.outputs.install }}
-      - name: Detect typecheck script
-        run: |
-          node -e "const fs=require('fs');const pkg=JSON.parse(fs.readFileSync('package.json','utf8'));if(!pkg.scripts||!pkg.scripts.typecheck){process.exit(1);}"
       - name: Run typecheck
+        if: ${{ hashFiles('package.json') != '' }}
         run: ${{ steps.pm.outputs['run-script'] }} typecheck
 
   test:
     name: Unit Tests
-    if: ${{ hashFiles('package.json') != '' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -156,6 +149,7 @@ jobs:
       - name: Detect package manager
         id: pm
         run: |
+          # same detection script as lint
           if [ -f pnpm-lock.yaml ]; then
             echo "manager=pnpm" >> "$GITHUB_OUTPUT"
             echo "cache=pnpm" >> "$GITHUB_OUTPUT"
@@ -192,15 +186,12 @@ jobs:
           version: 9
       - name: Install dependencies
         run: ${{ steps.pm.outputs.install }}
-      - name: Detect test script
-        run: |
-          node -e "const fs=require('fs');const pkg=JSON.parse(fs.readFileSync('package.json','utf8'));if(!pkg.scripts||!pkg.scripts.test){process.exit(1);}"
       - name: Run unit tests
+        if: ${{ hashFiles('package.json') != '' }}
         run: ${{ steps.pm.outputs['run-script'] }} test -- --watch=false
 
   build:
     name: Preview Build
-    if: ${{ hashFiles('package.json') != '' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -208,6 +199,7 @@ jobs:
       - name: Detect package manager
         id: pm
         run: |
+          # same detection script as lint
           if [ -f pnpm-lock.yaml ]; then
             echo "manager=pnpm" >> "$GITHUB_OUTPUT"
             echo "cache=pnpm" >> "$GITHUB_OUTPUT"
@@ -244,8 +236,6 @@ jobs:
           version: 9
       - name: Install dependencies
         run: ${{ steps.pm.outputs.install }}
-      - name: Detect build script
-        run: |
-          node -e "const fs=require('fs');const pkg=JSON.parse(fs.readFileSync('package.json','utf8'));if(!pkg.scripts||!pkg.scripts.build){process.exit(1);}"
       - name: Generate preview build
+        if: ${{ hashFiles('package.json') != '' }}
         run: ${{ steps.pm.outputs['run-script'] }} build
