@@ -1,7 +1,6 @@
 # Kanban Board (Initial Setup)
 
 ## Backlog
-- A-3-data-model-migrations
 - A-4-auth-rls-baseline
 - A-5-vision-flow
 - A-6-plan-12-week
@@ -19,6 +18,7 @@
 
 ## In Progress
 - A-1-kanban-scaffolding
+- A-3-data-model-migrations
 
 ## In Review
 - A-2-ci-setup
