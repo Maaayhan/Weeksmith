@@ -1,7 +1,6 @@
 # Kanban Board (Initial Setup)
 
 ## Backlog
-- A-2-ci-setup
 - A-3-data-model-migrations
 - A-4-auth-rls-baseline
 - A-5-vision-flow
@@ -22,7 +21,7 @@
 - A-1-kanban-scaffolding
 
 ## In Review
-- _None_
+- A-2-ci-setup
 
 ## Testing / QA
 - _None_
