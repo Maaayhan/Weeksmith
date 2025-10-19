@@ -73,16 +73,16 @@ jobs:
             echo "install=npm install" >> "$GITHUB_OUTPUT"
             echo "run-script=npm run" >> "$GITHUB_OUTPUT"
           fi
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: ${{ steps.pm.outputs.cache }}
       - name: Set up pnpm
         if: ${{ steps.pm.outputs.manager == 'pnpm' }}
         uses: pnpm/action-setup@v4
         with:
           version: 9
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: ${{ steps.pm.outputs.cache }}
       - name: Enable corepack
         if: ${{ steps.pm.outputs.manager != 'npm' }}
         run: corepack enable
@@ -123,16 +123,16 @@ jobs:
             echo "install=npm install" >> "$GITHUB_OUTPUT"
             echo "run-script=npm run" >> "$GITHUB_OUTPUT"
           fi
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: ${{ steps.pm.outputs.cache }}
       - name: Set up pnpm
         if: ${{ steps.pm.outputs.manager == 'pnpm' }}
         uses: pnpm/action-setup@v4
         with:
           version: 9
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: ${{ steps.pm.outputs.cache }}
       - name: Enable corepack
         if: ${{ steps.pm.outputs.manager != 'npm' }}
         run: corepack enable
@@ -173,16 +173,16 @@ jobs:
             echo "install=npm install" >> "$GITHUB_OUTPUT"
             echo "run-script=npm run" >> "$GITHUB_OUTPUT"
           fi
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: ${{ steps.pm.outputs.cache }}
       - name: Set up pnpm
         if: ${{ steps.pm.outputs.manager == 'pnpm' }}
         uses: pnpm/action-setup@v4
         with:
           version: 9
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: ${{ steps.pm.outputs.cache }}
       - name: Enable corepack
         if: ${{ steps.pm.outputs.manager != 'npm' }}
         run: corepack enable
@@ -223,16 +223,16 @@ jobs:
             echo "install=npm install" >> "$GITHUB_OUTPUT"
             echo "run-script=npm run" >> "$GITHUB_OUTPUT"
           fi
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: ${{ steps.pm.outputs.cache }}
       - name: Set up pnpm
         if: ${{ steps.pm.outputs.manager == 'pnpm' }}
         uses: pnpm/action-setup@v4
         with:
           version: 9
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: ${{ steps.pm.outputs.cache }}
       - name: Enable corepack
         if: ${{ steps.pm.outputs.manager != 'npm' }}
         run: corepack enable
