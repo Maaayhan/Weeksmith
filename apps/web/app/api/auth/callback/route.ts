@@ -41,6 +41,24 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  const redirectUrl = new URL(redirectTo, requestUrl.origin);
+  // Sanitize redirect target to prevent open redirects
+  const resolveSafeRedirect = (target: string, base: URL): URL => {
+    try {
+      // Disallow protocol-relative or absolute URLs (e.g. //evil.com or https://evil.com)
+      if (target.startsWith("//") || /^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(target)) {
+        return new URL("/", base.origin);
+      }
+      const url = new URL(target, base.origin);
+      // Enforce same-origin only
+      if (url.origin !== base.origin) {
+        return new URL("/", base.origin);
+      }
+      return url;
+    } catch {
+      return new URL("/", base.origin);
+    }
+  };
+
+  const redirectUrl = resolveSafeRedirect(redirectTo, requestUrl);
   return NextResponse.redirect(redirectUrl);
 }
