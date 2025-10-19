@@ -21,10 +21,9 @@
 
 ## In Review
 - A-2-ci-setup
-- A-4-auth-rls-baseline
 
 ## Testing / QA
-- _None_
+- A-4-auth-rls-baseline
 
 ## Blocked
 - _None_
