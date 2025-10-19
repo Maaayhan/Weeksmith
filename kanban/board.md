@@ -1,7 +1,6 @@
 # Kanban Board (Initial Setup)
 
 ## Backlog
-- A-4-auth-rls-baseline
 - A-5-vision-flow
 - A-6-plan-12-week
 - A-7-this-week-views
@@ -22,6 +21,7 @@
 
 ## In Review
 - A-2-ci-setup
+- A-4-auth-rls-baseline
 
 ## Testing / QA
 - _None_
