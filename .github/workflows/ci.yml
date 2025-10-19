@@ -29,14 +29,16 @@ jobs:
             echo "from=${{ github.event.before }}" >> "$GITHUB_OUTPUT"
             echo "to=${{ github.sha }}" >> "$GITHUB_OUTPUT"
           fi
+      - name: Install commitlint dependencies
+        run: |
+          npm install --no-save @commitlint/cli@19 @commitlint/config-conventional@19
       - name: Lint commits
         if: ${{ steps.range.outputs.from != '' }}
         env:
           FROM: ${{ steps.range.outputs.from }}
           TO: ${{ steps.range.outputs.to }}
         run: |
-          npx --yes -p @commitlint/cli@19 -p @commitlint/config-conventional@19 \
-            commitlint --config commitlint.config.cjs --from "$FROM" --to "$TO"
+          npx commitlint --config commitlint.config.cjs --from "$FROM" --to "$TO"
       - name: Skip when no range available
         if: ${{ steps.range.outputs.from == '' }}
         run: echo "No commit range detected; skipping conventional commit lint."
@@ -76,14 +78,14 @@ jobs:
         with:
           node-version: 20
           cache: ${{ steps.pm.outputs.cache }}
-      - name: Enable corepack
-        if: ${{ steps.pm.outputs.manager != 'npm' }}
-        run: corepack enable
       - name: Set up pnpm
         if: ${{ steps.pm.outputs.manager == 'pnpm' }}
         uses: pnpm/action-setup@v4
         with:
           version: 9
+      - name: Enable corepack
+        if: ${{ steps.pm.outputs.manager != 'npm' }}
+        run: corepack enable
       - name: Install dependencies
         run: ${{ steps.pm.outputs.install }}
       - name: Run lint
@@ -126,14 +128,14 @@ jobs:
         with:
           node-version: 20
           cache: ${{ steps.pm.outputs.cache }}
-      - name: Enable corepack
-        if: ${{ steps.pm.outputs.manager != 'npm' }}
-        run: corepack enable
       - name: Set up pnpm
         if: ${{ steps.pm.outputs.manager == 'pnpm' }}
         uses: pnpm/action-setup@v4
         with:
           version: 9
+      - name: Enable corepack
+        if: ${{ steps.pm.outputs.manager != 'npm' }}
+        run: corepack enable
       - name: Install dependencies
         run: ${{ steps.pm.outputs.install }}
       - name: Run typecheck
@@ -176,14 +178,14 @@ jobs:
         with:
           node-version: 20
           cache: ${{ steps.pm.outputs.cache }}
-      - name: Enable corepack
-        if: ${{ steps.pm.outputs.manager != 'npm' }}
-        run: corepack enable
       - name: Set up pnpm
         if: ${{ steps.pm.outputs.manager == 'pnpm' }}
         uses: pnpm/action-setup@v4
         with:
           version: 9
+      - name: Enable corepack
+        if: ${{ steps.pm.outputs.manager != 'npm' }}
+        run: corepack enable
       - name: Install dependencies
         run: ${{ steps.pm.outputs.install }}
       - name: Run unit tests
@@ -226,14 +228,14 @@ jobs:
         with:
           node-version: 20
           cache: ${{ steps.pm.outputs.cache }}
-      - name: Enable corepack
-        if: ${{ steps.pm.outputs.manager != 'npm' }}
-        run: corepack enable
       - name: Set up pnpm
         if: ${{ steps.pm.outputs.manager == 'pnpm' }}
         uses: pnpm/action-setup@v4
         with:
           version: 9
+      - name: Enable corepack
+        if: ${{ steps.pm.outputs.manager != 'npm' }}
+        run: corepack enable
       - name: Install dependencies
         run: ${{ steps.pm.outputs.install }}
       - name: Generate preview build
