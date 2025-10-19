@@ -232,4 +232,8 @@ jobs:
         run: ${{ steps.pm.outputs.install }}
       - name: Generate preview build
         if: ${{ hashFiles('package.json') != '' }}
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: example-anon-key
+          SUPABASE_SERVICE_ROLE_KEY: example-service-key
         run: ${{ steps.pm.outputs['run-script'] }} build
