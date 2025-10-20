@@ -158,7 +158,7 @@ export const AuditLogSchema = z.object({
   afterState: z.record(z.any()).nullable(),
   rationale: z.string().nullable(),
   correlationId: uuid().nullable(),
-  sourceIp: z.string().ip({ version: "v4v6" }).nullable(),
+  sourceIp: z.string().ip().nullable(),
   userAgent: z.string().nullable(),
   createdAt: timestamp(),
 });

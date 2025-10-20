@@ -11,7 +11,7 @@
 | §4.4 / §9 Export & Data | Markdown/CSV exports, audit trail | Not Started | [A-9](issues/A-9-export-templates.md)
 | §5.1 Performance | Response SLOs, degradation strategies | Not Started | [A-8](issues/A-8-ai-wam-chat.md)
 | §5.2 Accessibility | WCAG 2.2 AA, shadcn/radix adoption | Not Started | [A-12](issues/A-12-accessibility-pass.md)
-| §5.3 & §12 Security/Privacy | RLS, ASVS L2, data minimization, deletion/export | Not Started | [A-4](issues/A-4-auth-rls-baseline.md), [A-13](issues/A-13-security-privacy-pass.md)
+| §5.3 & §12 Security/Privacy | RLS, ASVS L2, data minimization, deletion/export | In Progress | [A-4](issues/A-4-auth-rls-baseline.md), [A-13](issues/A-13-security-privacy-pass.md)
 | §5.4 Observability | OpenTelemetry instrumentation | Not Started | [A-14](issues/A-14-metrics-events.md)
 | §5.5 & §8 AI Safety | Structured outputs, tool gating, crisis handling | Not Started | [A-8](issues/A-8-ai-wam-chat.md)
 | §9 Data Model | Schema & migrations | In Progress | [A-3](issues/A-3-data-model-migrations.md)

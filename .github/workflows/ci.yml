@@ -29,14 +29,16 @@ jobs:
             echo "from=${{ github.event.before }}" >> "$GITHUB_OUTPUT"
             echo "to=${{ github.sha }}" >> "$GITHUB_OUTPUT"
           fi
+      - name: Install commitlint dependencies
+        run: |
+          npm install --no-save @commitlint/cli@19 @commitlint/config-conventional@19
       - name: Lint commits
         if: ${{ steps.range.outputs.from != '' }}
         env:
           FROM: ${{ steps.range.outputs.from }}
           TO: ${{ steps.range.outputs.to }}
         run: |
-          npx --yes -p @commitlint/cli@19 -p @commitlint/config-conventional@19 \
-            commitlint --config commitlint.config.cjs --from "$FROM" --to "$TO"
+          npx commitlint --config commitlint.config.cjs --from "$FROM" --to "$TO"
       - name: Skip when no range available
         if: ${{ steps.range.outputs.from == '' }}
         run: echo "No commit range detected; skipping conventional commit lint."
@@ -71,6 +73,9 @@ jobs:
             echo "install=npm install" >> "$GITHUB_OUTPUT"
             echo "run-script=npm run" >> "$GITHUB_OUTPUT"
           fi
+      - name: Set up pnpm
+        if: ${{ steps.pm.outputs.manager == 'pnpm' }}
+        uses: pnpm/action-setup@v4
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -79,11 +84,6 @@ jobs:
       - name: Enable corepack
         if: ${{ steps.pm.outputs.manager != 'npm' }}
         run: corepack enable
-      - name: Set up pnpm
-        if: ${{ steps.pm.outputs.manager == 'pnpm' }}
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
       - name: Install dependencies
         run: ${{ steps.pm.outputs.install }}
       - name: Run lint
@@ -121,6 +121,9 @@ jobs:
             echo "install=npm install" >> "$GITHUB_OUTPUT"
             echo "run-script=npm run" >> "$GITHUB_OUTPUT"
           fi
+      - name: Set up pnpm
+        if: ${{ steps.pm.outputs.manager == 'pnpm' }}
+        uses: pnpm/action-setup@v4
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -129,11 +132,6 @@ jobs:
       - name: Enable corepack
         if: ${{ steps.pm.outputs.manager != 'npm' }}
         run: corepack enable
-      - name: Set up pnpm
-        if: ${{ steps.pm.outputs.manager == 'pnpm' }}
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
       - name: Install dependencies
         run: ${{ steps.pm.outputs.install }}
       - name: Run typecheck
@@ -171,6 +169,9 @@ jobs:
             echo "install=npm install" >> "$GITHUB_OUTPUT"
             echo "run-script=npm run" >> "$GITHUB_OUTPUT"
           fi
+      - name: Set up pnpm
+        if: ${{ steps.pm.outputs.manager == 'pnpm' }}
+        uses: pnpm/action-setup@v4
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -179,11 +180,6 @@ jobs:
       - name: Enable corepack
         if: ${{ steps.pm.outputs.manager != 'npm' }}
         run: corepack enable
-      - name: Set up pnpm
-        if: ${{ steps.pm.outputs.manager == 'pnpm' }}
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
       - name: Install dependencies
         run: ${{ steps.pm.outputs.install }}
       - name: Run unit tests
@@ -221,6 +217,9 @@ jobs:
             echo "install=npm install" >> "$GITHUB_OUTPUT"
             echo "run-script=npm run" >> "$GITHUB_OUTPUT"
           fi
+      - name: Set up pnpm
+        if: ${{ steps.pm.outputs.manager == 'pnpm' }}
+        uses: pnpm/action-setup@v4
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -229,13 +228,12 @@ jobs:
       - name: Enable corepack
         if: ${{ steps.pm.outputs.manager != 'npm' }}
         run: corepack enable
-      - name: Set up pnpm
-        if: ${{ steps.pm.outputs.manager == 'pnpm' }}
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
       - name: Install dependencies
         run: ${{ steps.pm.outputs.install }}
       - name: Generate preview build
         if: ${{ hashFiles('package.json') != '' }}
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: example-anon-key
+          SUPABASE_SERVICE_ROLE_KEY: example-service-key
         run: ${{ steps.pm.outputs['run-script'] }} build
