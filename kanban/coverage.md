@@ -3,7 +3,7 @@
 | PRD Section | Scope Summary | Status | Linked Work Items |
 | --- | --- | --- | --- |
 | §4.1 Vision | Vision editor, board, alignment prompts | In Progress | [A-5](issues/A-5-vision-flow.md)
-| §4.2 Plan (12-week) | 1+1 goals, input-only, lock rules, AI generator | Not Started | [A-6](issues/A-6-plan-12-week.md)
+| §4.2 Plan (12-week) | 1+1 goals, input-only, lock rules, AI generator | In Progress | [A-6](issues/A-6-plan-12-week.md)
 | §4.3 This Week | Time-blocking / Priority Queue, 85% gauge, obstacles | Not Started | [A-7](issues/A-7-this-week-views.md)
 | §4.4 AI WAM | Chat flow, persona, structured proposals, approvals, exports | Not Started | [A-8](issues/A-8-ai-wam-chat.md)
 | §4.5 Retro | 12-week retro, rest mode, next-cycle draft | Not Started | [A-11](issues/A-11-retro-cycle.md)

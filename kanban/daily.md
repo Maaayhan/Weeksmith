@@ -7,3 +7,4 @@
 | 2025-10-04 | Moved A-4 to In Progress; created feature branch | Implement Supabase auth/RLS scaffolding and tests | None | N/A | [A-4](issues/A-4-auth-rls-baseline.md) |
 | 2025-10-04 | Reviewed inherited A-4 branch state; updated issue log with latest commit metadata; documented make_pr tool constraint | Monitor existing PR for review (reuse prior submission) | None | N/A | [A-4](issues/A-4-auth-rls-baseline.md) |
 | 2025-10-20 | Pulled A-5 into In Progress; built vision server action, UI, alignment chips, and accessibility doc | Run lint/typecheck, capture QA evidence, prep PR for review | None | N/A | [A-5](issues/A-5-vision-flow.md) |
+| 2025-12-03 | Moved A-6 to In Progress; created feature branch; built plan server action/shared validators/UI with lock + AI draft + copy; ran vitest | Prep PR with logs/board updates, capture screenshot if possible | None | N/A | [A-6](issues/A-6-plan-12-week.md) |
