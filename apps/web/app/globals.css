@@ -343,3 +343,147 @@ input:focus-visible {
   border-radius: 999px;
   font-size: 0.85rem;
 }
+
+.plan-section {
+  margin-top: 2rem;
+  border: 1px solid rgba(126, 134, 158, 0.2);
+}
+
+.plan-form {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.plan-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.plan-header h1 {
+  margin: 0;
+}
+
+.plan-subtitle,
+.plan-lock-note {
+  margin: 0.25rem 0;
+  color: rgba(226, 232, 240, 0.8);
+}
+
+.plan-actions {
+  display: flex;
+  align-items: center;
+}
+
+.plan-goals {
+  display: grid;
+  gap: 1rem;
+}
+
+.plan-goal-field {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.plan-goal-field textarea,
+.plan-copy input,
+.plan-copy select,
+.plan-field select,
+.plan-field input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.08);
+  color: inherit;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.plan-copy {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.plan-copy-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+.plan-copy-action {
+  display: flex;
+  align-items: flex-end;
+}
+
+.plan-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.plan-card {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 1rem;
+  padding: 1rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.plan-card--locked {
+  border-color: rgba(248, 113, 113, 0.35);
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(24, 24, 27, 0.7));
+}
+
+.plan-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.plan-week {
+  margin: 0;
+  font-weight: 700;
+}
+
+.plan-lock-state {
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  background: rgba(59, 130, 246, 0.25);
+  font-size: 0.85rem;
+}
+
+.plan-field {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.plan-qty-row {
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+}
+
+.plan-helper {
+  margin: 0;
+  color: rgba(226, 232, 240, 0.7);
+  font-size: 0.9rem;
+}
+
+.plan-error {
+  margin: 0;
+  color: #fecaca;
+  font-size: 0.9rem;
+}
+
+.plan-flash {
+  margin: 0;
+  padding: 0.85rem 1rem;
+  border-radius: 0.75rem;
+}
+
+.plan-flash--success {
+  background: rgba(34, 197, 94, 0.2);
+}
+
+.plan-flash--error {
+  background: rgba(248, 113, 113, 0.2);
+}
