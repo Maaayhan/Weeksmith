@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getCorrelationId } from "@/lib/security/correlation";
@@ -24,6 +25,10 @@ export default async function DashboardPage() {
         <p>
           RLS-enforced data pipelines are ready. Future tasks will surface the
           12-week cycle, WAM cadence, and lock policies here.
+        </p>
+        <p style={{ marginTop: "1.25rem" }}>
+          Start with your <Link href="/vision">Vision navigator</Link> to ground
+          every plan in your values before defining quotas.
         </p>
       </section>
     </main>
