@@ -6,3 +6,4 @@
 | 2025-10-04 | Pulled A-3 branch and updated board; Authored A-3 migrations/docs/schemas | Blocked on local Postgres runtime for migration smoke test | Docker/psql unavailable | Document limitation; rely on CI | [A-3](issues/A-3-data-model-migrations.md) |
 | 2025-10-04 | Moved A-4 to In Progress; created feature branch | Implement Supabase auth/RLS scaffolding and tests | None | N/A | [A-4](issues/A-4-auth-rls-baseline.md) |
 | 2025-10-04 | Reviewed inherited A-4 branch state; updated issue log with latest commit metadata; documented make_pr tool constraint | Monitor existing PR for review (reuse prior submission) | None | N/A | [A-4](issues/A-4-auth-rls-baseline.md) |
+| 2025-10-20 | Pulled A-5 into In Progress; built vision server action, UI, alignment chips, and accessibility doc | Run lint/typecheck, capture QA evidence, prep PR for review | None | N/A | [A-5](issues/A-5-vision-flow.md) |
