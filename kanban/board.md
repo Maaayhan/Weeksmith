@@ -1,7 +1,6 @@
 # Kanban Board (Initial Setup)
 
 ## Backlog
-- A-7-this-week-views
 - A-8-ai-wam-chat
 - A-9-export-templates
 - A-10-notifications
@@ -22,6 +21,7 @@
 - A-2-ci-setup
 - A-5-vision-flow
 - A-6-plan-12-week
+- A-7-this-week-views
 
 ## Testing / QA
 - A-4-auth-rls-baseline

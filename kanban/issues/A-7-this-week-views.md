@@ -49,19 +49,59 @@ Implement the weekly execution surface offering time-blocking and priority queue
 ## Design Notes & Decisions
 
 ## Implementation Log
-- YYYY-MM-DD: 
+- UTC 2025-12-03 04:15  branch=feature/A-7-this-week-views
+  $ git checkout -b feature/A-7-this-week-views
+  Result: OK
+
+- UTC 2025-12-03 04:18
+  Action: Move card to In Progress in board.md
+  Expected: Board shows A-7 under In Progress and removed from Backlog
+  Actual: Updated successfully
+  Result: OK
+
+- UTC 2025-12-03 04:19
+  Action: Added This Week server actions for mode persistence, progress save, and obstacle logging; created completion metrics helper with unit tests
+  Expected: Payload validation and audit logging cover weekly edits
+  Actual: Actions compile; metrics tests pass
+  Result: OK
+
+- UTC 2025-12-03 04:20
+  Action: Updated dashboard page to load weekly plan, plan items, and obstacle audit rows for current week
+  Expected: This Week surface receives hydrated data with lock thresholds
+  Actual: Page renders with fetched plan/obstacle data paths
+  Result: OK
+
+- UTC 2025-12-03 04:21
+  Action: Built ThisWeekSurface client UI (mode toggle, gauge, time-block + priority queue cards, obstacle form) and added week styles
+  Expected: Users can switch modes without quota edits, view lock cues, and log obstacles
+  Actual: UI renders with gauge, lock messaging, and forms wired to actions
+  Result: OK
+
+- UTC 2025-12-03 04:22
+  $ git commit -m "feat(this-week): add execution views and logs [A-7]"
+  Result: OK (commit updated after board move)
+
+- UTC 2025-12-03 04:24
+  Action: Created PR via make_pr and moved A-7 card to In Review
+  Expected: PR available for reviewers with CI trigger
+  Actual: PR message recorded; board updated
+  Result: OK
 
 ## Commands Executed
-- 
+- UTC 2025-12-03 04:15 `git checkout -b feature/A-7-this-week-views`
+- UTC 2025-12-03 04:18 `apply_patch kanban/board.md`
+- UTC 2025-12-03 04:19 `pnpm test`
+- UTC 2025-12-03 04:22 `git commit -m "feat(this-week): add execution views and logs [A-7]"`
+- UTC 2025-12-03 04:24 `make_pr [A-7] Add This Week execution views`
 
 ## Test Evidence
-- 
+- UTC 2025-12-03 04:19 `pnpm test` (vitest) — pass
 
 ## Bugs & Fixes
 - (Date) P#: Description — Resolution / Commit
 
 ## Review Log
-- (Date) Reviewer: Summary & Outcome
+- UTC 2025-12-03 04:24  PR [A-7] Add This Week execution views (make_pr) — Awaiting review
 
 ## QA Report
 - Test Session: 
