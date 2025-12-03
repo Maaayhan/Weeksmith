@@ -6,6 +6,14 @@ import { getClientEnv } from "@/lib/env";
 
 const PROTECTED_PATHS = ["/dashboard", "/vision", "/plan"];
 
+function isProtectedPath(pathname: string): boolean {
+  return PROTECTED_PATHS.some((protectedPath) => {
+    if (pathname === protectedPath) return true;
+    if (pathname.startsWith(`${protectedPath}/`)) return true;
+    return false;
+  });
+}
+
 export async function middleware(req: NextRequest) {
   const env = getClientEnv();
   const requestHeaders = new Headers(req.headers);
@@ -32,9 +40,7 @@ export async function middleware(req: NextRequest) {
     data: { session },
   } = await supabase.auth.getSession();
 
-  const requiresAuth = PROTECTED_PATHS.some((path) =>
-    req.nextUrl.pathname.startsWith(path),
-  );
+  const requiresAuth = isProtectedPath(req.nextUrl.pathname);
 
   if (!session && requiresAuth) {
     const redirectUrl = req.nextUrl.clone();
