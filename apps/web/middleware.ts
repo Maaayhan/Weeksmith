@@ -4,7 +4,7 @@ import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs";
 import type { Database } from "@weeksmith/schemas";
 import { getClientEnv } from "@/lib/env";
 
-const PROTECTED_PATHS = ["/dashboard"];
+const PROTECTED_PATHS = ["/dashboard", "/vision", "/plan"];
 
 export async function middleware(req: NextRequest) {
   const env = getClientEnv();
