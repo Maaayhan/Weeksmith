@@ -3,8 +3,8 @@
 import type { ChangeEvent } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
-import type { VisionActionState, VisionSummary } from "@/actions/vision";
-import { initialVisionActionState } from "@/actions/vision";
+import type { VisionActionState, VisionSummary } from "@/actions/vision-shared";
+import { initialVisionActionState } from "@/actions/vision-shared";
 
 type VisionFormProps = {
   initialVision: VisionSummary;

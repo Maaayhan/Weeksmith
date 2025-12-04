@@ -35,7 +35,7 @@ export default async function HomePage() {
         ) : (
           <div>
             <p>You are not signed in.</p>
-            <Link href="/auth/login">Continue with email</Link>
+            <Link href="/login">Continue with email</Link>
           </div>
         )}
       </section>
