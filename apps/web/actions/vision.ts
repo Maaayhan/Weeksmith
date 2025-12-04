@@ -1,91 +1,21 @@
-"use server";
+ "use server";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { z } from "zod";
 import type { Database, Json } from "@weeksmith/schemas";
 import { VisionUpsertSchema } from "@weeksmith/schemas";
 import { createServerActionSupabaseClient } from "@/lib/supabase/server";
 import { recordAuditLog } from "@/lib/security/audit";
 import { getCorrelationId, getRequestMetadata } from "@/lib/security/correlation";
-
-export type VisionActionState = {
-  status: "idle" | "success" | "error";
-  message?: string;
-  fieldErrors?: Partial<Record<VisionField, string>>;
-  vision?: VisionSummary;
-};
-
-export type VisionSummary = {
-  daily: string;
-  weekly: string;
-  year: string;
-  life: string;
-  tags: string[];
-  updatedAt: string;
-};
-
-type VisionField = "daily" | "weekly" | "year" | "life" | "tags";
-
-const initialMessage: VisionActionState = {
-  status: "idle",
-};
-
-const visionFormSchema = z.object({
-  daily: z
-    .string()
-    .min(1, "Daily vision is required")
-    .max(2000, "Keep the daily vision under 2000 characters"),
-  weekly: z
-    .string()
-    .min(1, "Weekly vision is required")
-    .max(2000, "Keep the weekly vision under 2000 characters"),
-  year: z
-    .string()
-    .min(1, "Year vision is required")
-    .max(2000, "Keep the year vision under 2000 characters"),
-  life: z
-    .string()
-    .min(1, "Life vision is required")
-    .max(2000, "Keep the life vision under 2000 characters"),
-  tags: z.string(),
-});
-
-const MAX_TAGS = 12;
-
-function parseTags(input: string): string[] {
-  if (!input) {
-    return [];
-  }
-  const normalized = input
-    .split(/[\n,]+/)
-    .map((tag) => tag.trim())
-    .filter(Boolean);
-  const unique: string[] = [];
-  const seen = new Set<string>();
-  for (const tag of normalized) {
-    const lowered = tag.toLowerCase();
-    if (!seen.has(lowered)) {
-      seen.add(lowered);
-      unique.push(tag);
-    }
-    if (unique.length >= MAX_TAGS) {
-      break;
-    }
-  }
-  return unique;
-}
-
-function toCamelVision(row: Database["public"]["Tables"]["vision"]["Row"]): VisionSummary {
-  return {
-    daily: row.daily ?? "",
-    weekly: row.weekly ?? "",
-    year: row.year ?? "",
-    life: row.life ?? "",
-    tags: Array.isArray(row.tags) ? row.tags : [],
-    updatedAt: row.updated_at ?? new Date().toISOString(),
-  };
-}
+import {
+  MAX_TAGS,
+  parseTags,
+  toCamelVision,
+  visionFormSchema,
+  type VisionActionState,
+  type VisionField,
+  type VisionSummary,
+} from "@/actions/vision-shared";
 
 export async function saveVision(
   _prevState: VisionActionState,
@@ -97,7 +27,7 @@ export async function saveVision(
   } = await supabase.auth.getSession();
 
   if (!session?.user?.id) {
-    redirect("/auth/login?redirectTo=/vision");
+    redirect("/login?redirectTo=/vision");
   }
 
   const raw = {
@@ -249,5 +179,3 @@ export async function saveVision(
     vision: summary,
   };
 }
-
-export { initialMessage as initialVisionActionState };

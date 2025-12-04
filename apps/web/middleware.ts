@@ -44,7 +44,7 @@ export async function middleware(req: NextRequest) {
 
   if (!session && requiresAuth) {
     const redirectUrl = req.nextUrl.clone();
-    redirectUrl.pathname = "/auth/login";
+    redirectUrl.pathname = "/login";
     redirectUrl.searchParams.set("redirectTo", req.nextUrl.pathname);
     return NextResponse.redirect(redirectUrl);
   }

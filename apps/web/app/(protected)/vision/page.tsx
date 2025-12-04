@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import type { Database } from "@weeksmith/schemas";
-import type { VisionSummary } from "@/actions/vision";
+import type { VisionSummary } from "@/actions/vision-shared";
 import { saveVision } from "@/actions/vision";
 import { AlignmentSurface } from "@/components/vision/alignment-surface";
 import { VisionForm } from "@/components/vision/vision-form";
@@ -33,7 +33,7 @@ export default async function VisionPage() {
   } = await supabase.auth.getSession();
 
   if (!session?.user?.id) {
-    redirect("/auth/login?redirectTo=/vision");
+    redirect("/login?redirectTo=/vision");
   }
 
   const userId = session.user.id;
