@@ -59,7 +59,7 @@ This checklist ensures the codebase is ready for user testing.
 - [x] Priority queue mode works
 - [x] Mode switching persists
 - [x] Completion gauge calculates correctly
-- [x] 80-90% zone highlighting works
+- [x] 85% target zone highlighting works (85-90% optimal range)
 - [x] Guidance messages display correctly
 - [x] Obstacle logging functional
 - [x] Progress saving works
@@ -200,7 +200,7 @@ Tested on:
 - ✅ Vision Navigator: Define your ideal day, week, year, and life
 - ✅ 12-Week Plan Builder: Create structured execution plans with 1+1 goals
 - ✅ This Week Dashboard: Track progress with time-blocking or priority queue
-- ✅ Completion Gauge: Visual feedback on your 80-90% sweet spot
+- ✅ Completion Gauge: Visual feedback targeting 85% completion (85-90% optimal range)
 - ✅ Obstacle Logging: Capture friction for future analysis
 
 ## Core Features

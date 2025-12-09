@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import type { PlanItemStatus, PlanMode } from "@weeksmith/schemas";
 import { useFormState, useFormStatus } from "react-dom";
-import { initialWeekState, logObstacle, saveWeekMode, saveWeekProgress } from "@/actions/week";
+import { logObstacle, saveWeekMode, saveWeekProgress } from "@/actions/week";
+import { initialWeekState } from "@/actions/week-shared";
 import { computeCompletionInsights } from "@/lib/week/metrics";
 
 type WeekItem = {
@@ -32,6 +33,7 @@ type ThisWeekSurfaceProps = {
   initialMode: PlanMode;
   items: WeekItem[];
   obstacles: ObstacleLog[];
+  weekProgressPct: number;
 };
 
 function ProgressButton({ disabled }: { disabled?: boolean }) {
@@ -59,6 +61,7 @@ export function ThisWeekSurface({
   initialMode,
   items,
   obstacles,
+  weekProgressPct,
 }: ThisWeekSurfaceProps) {
   const [mode, setMode] = useState<PlanMode>(initialMode);
   const [entries, setEntries] = useState<WeekItem[]>(items);
@@ -145,8 +148,8 @@ export function ThisWeekSurface({
   };
 
   const zoneLabel = {
-    low: "Below 80%",
-    target: "80–90% sweet spot",
+    low: "Below 85%",
+    target: "85% target zone",
     high: "Above 90%",
   }[completion.zone];
 
@@ -289,7 +292,9 @@ export function ThisWeekSurface({
         <div>
           <p className="week-kicker">This Week</p>
           <h1>Week {weekNo} execution</h1>
-          <p className="week-helper">Switch between time blocking and queue views without altering quotas.</p>
+          <p className="week-helper">
+            Week progress: {weekProgressPct}% elapsed · Switch between time blocking and queue views without altering quotas.
+          </p>
         </div>
         <form action={modeAction} className="week-mode-toggle">
           <input type="hidden" name="weeklyPlanId" value={weeklyPlanId ?? ""} />
