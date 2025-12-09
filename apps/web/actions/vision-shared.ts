@@ -61,9 +61,6 @@ export function parseTags(input: string): string[] {
       seen.add(lowered);
       unique.push(tag);
     }
-    if (unique.length >= MAX_TAGS) {
-      break;
-    }
   }
   return unique;
 }
