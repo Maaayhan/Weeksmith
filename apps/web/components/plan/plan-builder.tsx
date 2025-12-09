@@ -195,7 +195,8 @@ export function PlanBuilder({
         week.weekNo === copy.toWeek
           ? {
               ...week,
-              tasks: sourceWeek.tasks.map((task) => ({ ...task })), // Deep copy tasks
+              // Clone tasks but drop ids to avoid reusing task IDs on the destination week
+              tasks: sourceWeek.tasks.map(({ id: _id, ...task }) => ({ ...task })),
             }
           : week,
       ),
