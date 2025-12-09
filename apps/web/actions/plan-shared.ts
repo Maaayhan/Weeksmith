@@ -7,6 +7,7 @@ export type PlanActionState = {
   fieldErrors?: Partial<Record<string, string>>;
 };
 
+// Legacy type for backward compatibility during migration
 export type PlanEntryInput = {
   weekNo: number;
   goalType: z.infer<typeof GoalTypeEnum>;
@@ -14,6 +15,19 @@ export type PlanEntryInput = {
   qty: number;
   unit: string;
   existingId?: string;
+};
+
+// New types: Each week has multiple tasks (bullet points)
+export type PlanTaskItem = {
+  id?: string; // existingId for existing tasks
+  goalType: z.infer<typeof GoalTypeEnum>;
+  task: string; // Simple bullet point text, no qty/unit needed
+};
+
+export type PlanWeekEntry = {
+  weekNo: number;
+  tasks: PlanTaskItem[];
+  locked: boolean;
 };
 
 export type PlanCopyInput = {
@@ -26,7 +40,7 @@ export type PlanPayload = {
   personalGoal: string;
   professionalGoal: string;
   lockedAfterWeek: number;
-  entries: PlanEntryInput[];
+  weeks: PlanWeekEntry[]; // Changed from entries to weeks
   copies: PlanCopyInput[];
 };
 
@@ -41,6 +55,18 @@ export const PlanEntrySchema = z.object({
   existingId: z.string().uuid().optional(),
 });
 
+export const PlanTaskItemSchema = z.object({
+  id: z.string().uuid().optional(),
+  goalType: GoalTypeEnum,
+  task: z.string().min(1, "Task description is required"),
+});
+
+export const PlanWeekEntrySchema = z.object({
+  weekNo: z.number().int().min(1).max(12),
+  tasks: PlanTaskItemSchema.array().min(0).max(20), // Max 20 tasks per week
+  locked: z.boolean(),
+});
+
 export const PlanCopySchema = z.object({
   fromWeek: z.number().int().min(1).max(12),
   toWeek: z.number().int().min(1).max(12),
@@ -51,7 +77,7 @@ export const PlanPayloadSchema = z.object({
   personalGoal: z.string().min(1, "Personal goal is required"),
   professionalGoal: z.string().min(1, "Professional goal is required"),
   lockedAfterWeek: z.number().int().min(1).max(12).default(6),
-  entries: PlanEntrySchema.array().max(32),
+  weeks: PlanWeekEntrySchema.array().length(12), // Exactly 12 weeks
   copies: PlanCopySchema.array().max(24),
 });
 

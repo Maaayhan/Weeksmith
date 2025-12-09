@@ -18,19 +18,29 @@ describe("plan validation helpers", () => {
   });
 
   it("accepts a well-formed payload", () => {
+    const weeks = Array.from({ length: 12 }, (_, index) => ({
+      weekNo: index + 1,
+      tasks:
+        index === 0
+          ? [
+              {
+                goalType: "personal",
+                task: "If 7am, then lift weights",
+              },
+              {
+                goalType: "professional",
+                task: "If afternoon block, then outline article",
+              },
+            ]
+          : [],
+      locked: false,
+    }));
+
     const payload = {
       personalGoal: "Complete strength training",
       professionalGoal: "Publish articles",
       lockedAfterWeek: 6,
-      entries: [
-        {
-          weekNo: 1,
-          goalType: "personal",
-          task: "If 7am, then lift weights",
-          qty: 3,
-          unit: "sessions",
-        },
-      ],
+      weeks,
       copies: [],
     };
 

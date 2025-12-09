@@ -2,16 +2,15 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
-import type { PlanCopyInput, PlanEntryInput, PlanPayload } from "@/actions/plan-shared";
-import { PlanEntrySchema, initialPlanState } from "@/actions/plan-shared";
+import type { PlanCopyInput, PlanPayload, PlanTaskItem, PlanWeekEntry } from "@/actions/plan-shared";
+import { PlanTaskItemSchema, initialPlanState } from "@/actions/plan-shared";
 import { savePlan } from "@/actions/plan";
-
-type PlanEntryDraft = PlanEntryInput & { locked: boolean };
 
 type PlanBuilderProps = {
   initialGoals: { personal: string; professional: string };
-  initialEntries: PlanEntryDraft[];
+  initialWeeks: PlanWeekEntry[];
   lockedAfterWeek: number;
+  currentWeek: number; // Current execution week
   visionTags: string[];
 };
 
@@ -24,116 +23,182 @@ function SubmitButton() {
   );
 }
 
-function normalizeEntries(entries: PlanEntryDraft[]): PlanEntryDraft[] {
-  return [...entries].sort((a, b) => a.weekNo - b.weekNo);
+// Helper to determine if a week is locked based on current execution progress
+function isWeekLocked(weekNo: number, currentWeek: number, lockedAfterWeek: number): boolean {
+  return currentWeek >= 7 && weekNo > lockedAfterWeek;
 }
 
 function buildGeneratorDraft(
-  entries: PlanEntryDraft[],
+  weeks: PlanWeekEntry[],
   visionTags: string[],
   lockedAfterWeek: number,
-): PlanEntryDraft[] {
+  currentWeek: number,
+): PlanWeekEntry[] {
   const focusTags = visionTags.length ? visionTags : ["focus", "health", "craft"];
-  const ordered = normalizeEntries(entries);
 
-  const generated = ordered.map((entry, index) => {
-    if (entry.locked) {
-      return entry;
+  return weeks.map((week) => {
+    // Don't modify locked weeks
+    if (week.locked) {
+      return week;
     }
-    if (entry.task.trim()) {
-      return entry;
+
+    // If week already has tasks, keep them
+    if (week.tasks.length > 0) {
+      return week;
     }
-    const tag = focusTags[index % focusTags.length];
-    const unit = entry.goalType === "professional" ? "blocks" : "sessions";
-    const qty = entry.weekNo <= lockedAfterWeek ? 3 : 2;
-    const task = `If ${tag} window opens, I will complete ${qty} ${unit} tied to ${tag}`;
+
+    // Generate tasks per week - mix of personal and professional
+    const tasks: PlanTaskItem[] = [];
+    const numPersonalTasks = week.weekNo <= lockedAfterWeek ? 3 : 2;
+    const numProfessionalTasks = week.weekNo <= lockedAfterWeek ? 3 : 2;
+
+    // Generate personal tasks
+    for (let i = 0; i < numPersonalTasks; i++) {
+      const tag = focusTags[i % focusTags.length];
+      const task = `Complete ${tag}-related action for personal goal`;
+      tasks.push({
+        goalType: "personal",
+        task,
+      });
+    }
+
+    // Generate professional tasks
+    for (let i = 0; i < numProfessionalTasks; i++) {
+      const tag = focusTags[(i + numPersonalTasks) % focusTags.length];
+      const task = `Complete ${tag}-related action for professional goal`;
+      tasks.push({
+        goalType: "professional",
+        task,
+      });
+    }
+
     return {
-      ...entry,
-      task,
-      unit,
-      qty,
+      ...week,
+      tasks,
     };
   });
-
-  const parsed = PlanEntrySchema.array().safeParse(generated.map(({ locked, ...rest }) => rest));
-  if (!parsed.success) {
-    console.warn("Generator produced invalid draft", parsed.error.issues);
-    return entries;
-  }
-
-  return generated;
 }
 
 export function PlanBuilder({
   initialGoals,
-  initialEntries,
+  initialWeeks,
   lockedAfterWeek,
+  currentWeek,
   visionTags,
 }: PlanBuilderProps) {
   const [state, formAction] = useFormState(savePlan, initialPlanState);
   const [goals, setGoals] = useState(initialGoals);
-  const [entries, setEntries] = useState<PlanEntryDraft[]>(() => normalizeEntries(initialEntries));
+  const [weeks, setWeeks] = useState<PlanWeekEntry[]>(initialWeeks);
   const [copies, setCopies] = useState<PlanCopyInput[]>([]);
   const [flashMessage, setFlashMessage] = useState<string | null>(null);
   const [copyFromWeek, setCopyFromWeek] = useState<number | "">("");
   const [copyToWeek, setCopyToWeek] = useState<number | "">("");
   const [copyNote, setCopyNote] = useState("Copied via planner");
+  const [importWeek, setImportWeek] = useState<number | "">("");
+  const [importGoalType, setImportGoalType] = useState<"personal" | "professional">("personal");
+  const [importText, setImportText] = useState("");
+  const [showImport, setShowImport] = useState(false);
 
   useEffect(() => {
     if (state.status === "success") {
       setFlashMessage(state.message ?? "Plan saved.");
-      setEntries((prev) =>
-        prev.map((entry) => ({
-          ...entry,
-          locked: entry.weekNo > lockedAfterWeek ? true : entry.locked,
+      // Update locked status based on current week
+      setWeeks((prev) =>
+        prev.map((week) => ({
+          ...week,
+          locked: isWeekLocked(week.weekNo, currentWeek, lockedAfterWeek),
         })),
       );
     } else if (state.status === "error") {
       setFlashMessage(state.message ?? "Unable to save plan.");
     }
-  }, [state, lockedAfterWeek]);
+  }, [state, currentWeek, lockedAfterWeek]);
 
   const payload = useMemo<PlanPayload>(() => {
-    const ordered = normalizeEntries(entries);
     return {
       personalGoal: goals.personal.trim(),
       professionalGoal: goals.professional.trim(),
       lockedAfterWeek,
-      entries: ordered.map(({ locked, ...rest }) => rest),
+      weeks: weeks.map((week) => ({
+        weekNo: week.weekNo,
+        tasks: week.tasks,
+        locked: week.locked,
+      })),
       copies,
     };
-  }, [entries, goals.personal, goals.professional, lockedAfterWeek, copies]);
+  }, [weeks, goals.personal, goals.professional, lockedAfterWeek, copies]);
 
   const payloadJson = useMemo(() => JSON.stringify(payload), [payload]);
 
-  const handleEntryChange = (weekNo: number, partial: Partial<PlanEntryDraft>) => {
-    setEntries((prev) =>
-      prev.map((entry) => (entry.weekNo === weekNo ? { ...entry, ...partial } : entry)),
+  const handleTaskChange = (weekNo: number, taskIndex: number, partial: Partial<PlanTaskItem>) => {
+    setWeeks((prev) =>
+      prev.map((week) => {
+        if (week.weekNo !== weekNo) return week;
+        if (week.locked) return week; // Don't modify locked weeks
+
+        const newTasks = [...week.tasks];
+        newTasks[taskIndex] = { ...newTasks[taskIndex], ...partial };
+        return { ...week, tasks: newTasks };
+      }),
+    );
+  };
+
+  const handleAddTask = (weekNo: number, goalType: "personal" | "professional") => {
+    const week = weeks.find((w) => w.weekNo === weekNo);
+    if (!week || week.locked) return;
+
+    setWeeks((prev) =>
+      prev.map((w) => {
+        if (w.weekNo !== weekNo) return w;
+        return {
+          ...w,
+          tasks: [
+            ...w.tasks,
+            {
+              goalType,
+              task: "",
+            },
+          ],
+        };
+      }),
+    );
+  };
+
+  const handleRemoveTask = (weekNo: number, taskIndex: number) => {
+    const week = weeks.find((w) => w.weekNo === weekNo);
+    if (!week || week.locked) return;
+
+    setWeeks((prev) =>
+      prev.map((w) => {
+        if (w.weekNo !== weekNo) return w;
+        return {
+          ...w,
+          tasks: w.tasks.filter((_, idx) => idx !== taskIndex),
+        };
+      }),
     );
   };
 
   const handleCopy = (copy: PlanCopyInput) => {
-    const source = entries.find((entry) => entry.weekNo === copy.fromWeek);
-    const target = entries.find((entry) => entry.weekNo === copy.toWeek);
-    if (!source || !target) {
+    const sourceWeek = weeks.find((w) => w.weekNo === copy.fromWeek);
+    const targetWeek = weeks.find((w) => w.weekNo === copy.toWeek);
+    if (!sourceWeek || !targetWeek) {
       setFlashMessage("Select both source and target weeks before copying.");
       return;
     }
-    if (target.locked) {
+    if (targetWeek.locked) {
       setFlashMessage(`Week ${copy.toWeek} is locked; cannot overwrite.`);
       return;
     }
-    setEntries((prev) =>
-      prev.map((entry) =>
-        entry.weekNo === copy.toWeek
+    setWeeks((prev) =>
+      prev.map((week) =>
+        week.weekNo === copy.toWeek
           ? {
-              ...entry,
-              task: source.task,
-              qty: source.qty,
-              unit: source.unit,
-              goalType: source.goalType,
+              ...week,
+              // Clone tasks but drop ids to avoid reusing task IDs on the destination week
+              tasks: sourceWeek.tasks.map(({ id: _id, ...task }) => ({ ...task })),
             }
-          : entry,
+          : week,
       ),
     );
     setCopies((prev) => [...prev, copy]);
@@ -143,8 +208,50 @@ export function PlanBuilder({
   };
 
   const handleGenerate = () => {
-    setEntries((prev) => buildGeneratorDraft(prev, visionTags, lockedAfterWeek));
-    setFlashMessage("AI draft applied. Review then save to lock weeks 7–12.");
+    setWeeks((prev) => buildGeneratorDraft(prev, visionTags, lockedAfterWeek, currentWeek));
+    setFlashMessage("AI draft applied. Review then save.");
+  };
+
+  const handleImport = () => {
+    if (!importWeek) {
+      setFlashMessage("Please select a week to import tasks.");
+      return;
+    }
+
+    const week = weeks.find((w) => w.weekNo === importWeek);
+    if (!week || week.locked) {
+      setFlashMessage(`Week ${importWeek} is locked; cannot import tasks.`);
+      return;
+    }
+
+    // Parse import text: each line is a task, filter empty lines
+    const tasks = importText
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0)
+      .map((task) => ({
+        goalType: importGoalType,
+        task,
+      }));
+
+    if (tasks.length === 0) {
+      setFlashMessage("No valid tasks found. Please enter at least one task.");
+      return;
+    }
+
+    setWeeks((prev) =>
+      prev.map((w) => {
+        if (w.weekNo !== importWeek) return w;
+        return {
+          ...w,
+          tasks: [...w.tasks, ...tasks],
+        };
+      }),
+    );
+
+    setFlashMessage(`Imported ${tasks.length} ${importGoalType} task${tasks.length !== 1 ? "s" : ""} to week ${importWeek}.`);
+    setImportText("");
+    setShowImport(false);
   };
 
   return (
@@ -155,7 +262,11 @@ export function PlanBuilder({
           <p className="plan-subtitle">
             Enforce 1 personal + 1 professional goal, input-only quotas, and 6/6 lock rules.
           </p>
-          <p className="plan-lock-note">Weeks 7–12 lock after you save. Aim for If-Then inputs.</p>
+          <p className="plan-lock-note">
+            {currentWeek >= 7
+              ? `You're in week ${currentWeek}. Weeks 7-12 are locked and cannot be modified.`
+              : `Weeks 7-12 will lock when you reach week 7. Aim for If-Then inputs.`}
+          </p>
         </div>
         <div className="plan-actions">
           <button type="button" className="secondary-button" onClick={handleGenerate}>
@@ -208,9 +319,9 @@ export function PlanBuilder({
               <option value="" disabled>
                 Week
               </option>
-              {entries.map((entry) => (
-                <option key={entry.weekNo} value={entry.weekNo}>
-                  Week {entry.weekNo}
+              {weeks.map((week) => (
+                <option key={week.weekNo} value={week.weekNo}>
+                  Week {week.weekNo}
                 </option>
               ))}
             </select>
@@ -221,9 +332,9 @@ export function PlanBuilder({
               <option value="" disabled>
                 Week
               </option>
-              {entries.map((entry) => (
-                <option key={entry.weekNo} value={entry.weekNo}>
-                  Week {entry.weekNo}
+              {weeks.map((week) => (
+                <option key={week.weekNo} value={week.weekNo}>
+                  Week {week.weekNo}
                 </option>
               ))}
             </select>
@@ -256,24 +367,104 @@ export function PlanBuilder({
             </button>
           </div>
         </div>
-        <p className="plan-helper">Copy preserves goal link and qty; locked weeks stay read-only.</p>
+        <p className="plan-helper">Copy preserves all tasks; locked weeks stay read-only.</p>
+      </section>
+
+      <section className="plan-import" aria-label="Import tasks">
+        <div className="plan-import-header">
+          <h3>Import Tasks</h3>
+          <button
+            type="button"
+            className="secondary-button"
+            onClick={() => {
+              setShowImport(!showImport);
+              if (showImport) {
+                setImportText("");
+                setImportWeek("");
+              }
+            }}
+          >
+            {showImport ? "Cancel" : "Import Tasks"}
+          </button>
+        </div>
+
+        {showImport && (
+          <div className="plan-import-form">
+            <div className="plan-import-controls">
+              <label>
+                Week
+                <select
+                  value={importWeek}
+                  onChange={(event) => setImportWeek(Number(event.target.value))}
+                >
+                  <option value="" disabled>
+                    Select week
+                  </option>
+                  {weeks
+                    .filter((week) => !week.locked)
+                    .map((week) => (
+                      <option key={week.weekNo} value={week.weekNo}>
+                        Week {week.weekNo}
+                      </option>
+                    ))}
+                </select>
+              </label>
+              <label>
+                Goal Type
+                <select
+                  value={importGoalType}
+                  onChange={(event) =>
+                    setImportGoalType(event.target.value as "personal" | "professional")
+                  }
+                >
+                  <option value="personal">Personal</option>
+                  <option value="professional">Professional</option>
+                </select>
+              </label>
+            </div>
+            <label>
+              Tasks (one per line)
+              <textarea
+                value={importText}
+                onChange={(event) => setImportText(event.target.value)}
+                placeholder="Paste your tasks here, one per line:&#10;Task 1&#10;Task 2&#10;Task 3"
+                rows={8}
+                className="plan-import-textarea"
+              />
+            </label>
+            <div className="plan-import-action">
+              <button
+                type="button"
+                className="primary-button"
+                onClick={handleImport}
+                disabled={!importWeek || !importText.trim()}
+              >
+                Import Tasks
+              </button>
+            </div>
+            <p className="plan-helper">
+              Paste multiple tasks, one per line. Empty lines will be ignored. Tasks will be added to the selected week.
+            </p>
+          </div>
+        )}
       </section>
 
       <section className="plan-grid" aria-label="Weekly quotas">
-        {entries.map((entry, index) => {
-          const path = `entries.${index}.task`;
-          const hasFieldError = state.fieldErrors?.[path];
-          const weekError = state.fieldErrors?.[`week-${entry.weekNo}`];
-          const isLocked =
-            entry.locked ||
-            (entry.weekNo > lockedAfterWeek && (!!entry.existingId || entry.task.trim().length > 0));
+        {weeks.map((week) => {
+          const weekError = state.fieldErrors?.[`week-${week.weekNo}`];
+          const isLocked = week.locked;
+
           return (
-            <article key={entry.weekNo} className={`plan-card ${isLocked ? "plan-card--locked" : ""}`}>
+            <article key={week.weekNo} className={`plan-card ${isLocked ? "plan-card--locked" : ""}`}>
               <header className="plan-card__header">
                 <div>
-                  <p className="plan-week">Week {entry.weekNo}</p>
+                  <p className="plan-week">Week {week.weekNo}</p>
                   <p className="plan-helper">
-                    {isLocked ? `Locked after week ${lockedAfterWeek}` : "Editable"}
+                    {isLocked
+                      ? `Locked: You're in week ${currentWeek}`
+                      : week.tasks.length === 0
+                        ? "No tasks yet"
+                        : `${week.tasks.length} task${week.tasks.length !== 1 ? "s" : ""}`}
                   </p>
                 </div>
                 <div className="plan-lock-state" aria-live="polite">
@@ -281,65 +472,118 @@ export function PlanBuilder({
                 </div>
               </header>
 
-              <label className="plan-field">
-                Goal focus
-                <select
-                  value={entry.goalType}
-                  onChange={(event) => handleEntryChange(entry.weekNo, { goalType: event.target.value as PlanEntryDraft["goalType"] })}
-                  disabled={isLocked}
-                >
-                  <option value="personal">Personal</option>
-                  <option value="professional">Professional</option>
-                </select>
-              </label>
+              <div className="plan-tasks">
+                {/* Group tasks by goal type */}
+                {(["personal", "professional"] as const).map((goalType) => {
+                  const tasksForGoal = week.tasks.filter((t) => t.goalType === goalType);
+                  const goalLabel = goalType === "personal" ? "Personal" : "Professional";
 
-              <label className="plan-field">
-                Input-only action (If-Then)
-                <input
-                  type="text"
-                  value={entry.task}
-                  onChange={(event) => handleEntryChange(entry.weekNo, { task: event.target.value })}
-                  placeholder="If 7am, then complete 90 min deep work"
-                  disabled={isLocked}
-                  aria-describedby={weekError ? `week-${entry.weekNo}-error` : undefined}
-                />
-              </label>
+                  return (
+                    <div key={goalType} className="plan-goal-group">
+                      <div className="plan-goal-group-header">
+                        <h3 className="plan-goal-group-title">{goalLabel} Tasks</h3>
+                        {!isLocked && (
+                          <button
+                            type="button"
+                            className="plan-add-task-small"
+                            onClick={() => handleAddTask(week.weekNo, goalType)}
+                            aria-label={`Add ${goalLabel.toLowerCase()} task`}
+                          >
+                            + Add
+                          </button>
+                        )}
+                      </div>
 
-              <div className="plan-qty-row">
-                <label className="plan-field">
-                  Qty
-                  <input
-                    type="number"
-                    min={0}
-                    step={0.5}
-                    value={entry.qty}
-                    onChange={(event) => handleEntryChange(entry.weekNo, { qty: Number(event.target.value) })}
-                    disabled={isLocked}
-                  />
-                </label>
-                <label className="plan-field">
-                  Unit
-                  <input
-                    type="text"
-                    value={entry.unit}
-                    onChange={(event) => handleEntryChange(entry.weekNo, { unit: event.target.value })}
-                    disabled={isLocked}
-                  />
-                </label>
+                      <ul className="plan-task-list">
+                        {tasksForGoal.map((task, taskIndexInGroup) => {
+                          // Find the actual index in the full tasks array
+                          let actualIndex = -1;
+                          let foundCount = 0;
+                          for (let i = 0; i < week.tasks.length; i++) {
+                            if (week.tasks[i].goalType === goalType) {
+                              if (foundCount === taskIndexInGroup) {
+                                actualIndex = i;
+                                break;
+                              }
+                              foundCount++;
+                            }
+                          }
+
+                          if (actualIndex === -1) {
+                            // Fallback: use taskIndexInGroup if we can't find the index
+                            actualIndex = taskIndexInGroup;
+                          }
+
+                          const taskPath = `weeks.${week.weekNo - 1}.tasks.${actualIndex}.task`;
+                          const hasFieldError = state.fieldErrors?.[taskPath];
+
+                          return (
+                            <li key={`${goalType}-${taskIndexInGroup}-${task.id || actualIndex}`} className="plan-task-bullet">
+                              <div className="plan-task-bullet-content">
+                                <textarea
+                                  value={task.task}
+                                  onChange={(event) =>
+                                    handleTaskChange(week.weekNo, actualIndex, { task: event.target.value })
+                                  }
+                                  placeholder="Enter task description..."
+                                  disabled={isLocked}
+                                  rows={2}
+                                  className="plan-task-textarea"
+                                  aria-describedby={
+                                    hasFieldError ? `week-${week.weekNo}-task-${actualIndex}-error` : undefined
+                                  }
+                                />
+                                {!isLocked && (
+                                  <button
+                                    type="button"
+                                    className="plan-task-remove-bullet"
+                                    onClick={() => handleRemoveTask(week.weekNo, actualIndex)}
+                                    aria-label={`Remove ${goalLabel.toLowerCase()} task`}
+                                  >
+                                    ×
+                                  </button>
+                                )}
+                              </div>
+                              {hasFieldError && (
+                                <p
+                                  className="plan-error"
+                                  role="alert"
+                                  id={`week-${week.weekNo}-task-${actualIndex}-error`}
+                                >
+                                  {hasFieldError}
+                                </p>
+                              )}
+                            </li>
+                          );
+                        })}
+
+                        {tasksForGoal.length === 0 && !isLocked && (
+                          <li className="plan-task-empty">
+                            <p className="plan-task-empty-text">No {goalLabel.toLowerCase()} tasks yet</p>
+                          </li>
+                        )}
+                      </ul>
+                    </div>
+                  );
+                })}
+
+                {weekError && (
+                  <p className="plan-error" role="alert">
+                    {weekError}
+                  </p>
+                )}
               </div>
-
-              {(hasFieldError || weekError) && (
-                <p className="plan-error" role="alert" id={`week-${entry.weekNo}-error`}>
-                  {weekError ?? hasFieldError}
-                </p>
-              )}
             </article>
           );
         })}
       </section>
 
       {flashMessage && (
-        <p className={`plan-flash plan-flash--${state.status === "error" ? "error" : "success"}`} role="status" aria-live="polite">
+        <p
+          className={`plan-flash plan-flash--${state.status === "error" ? "error" : "success"}`}
+          role="status"
+          aria-live="polite"
+        >
           {flashMessage}
         </p>
       )}
