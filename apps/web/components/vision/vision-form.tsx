@@ -37,14 +37,14 @@ const prompts: PromptConfig[] = [
     label: "Daily Vision",
     helper: "Describe the rhythm of an ideal day. Mention energy anchors, focus windows, and closing rituals.",
     placeholder:
-      "05:30 wake – hydrate, movement\n07:00 deep work (creation)\n13:00 outdoor walk + lunch\n16:00 connection / coaching\n20:30 tech-free wind down",
+      "- What time do you wake up?\n- Where are you?\n- What size house / apartment are you in?\n- What’s the first thing you do?\n- What activities are you doing in chronological order?\n- How do you feel when you are doing these things?\n- What are you eating for lunch?\n- What time are you going to bed?",
   },
   {
     id: "weekly",
     label: "Weekly Vision",
     helper: "Capture the cadence of an ideal week. Highlight recurring anchors, review slots, and rest blocks.",
     placeholder:
-      "Mon/Tue: maker mornings, PM WAM prep\nWed: Publish flagship article\nThu: Partnerships outreach\nFri: Retro + next-week sketch\nSat: Long run + social reset",
+      "- How many days are you at work or working? Are you always at home? \n- Are you going on many trips? \n- Do you have weekly activities like massages, tennis lessons, or kids’ soccer games to attend? What days of the week are these? \n- How close are you with your family? Your friends? Are you having weekly dinners or events? ",
   },
   {
     id: "year",
@@ -85,7 +85,7 @@ function formatTimestamp(timestamp?: string): string {
   }
   try {
     const date = new Date(timestamp);
-    return new Intl.DateTimeFormat(undefined, {
+    return new Intl.DateTimeFormat("en-US", {
       dateStyle: "medium",
       timeStyle: "short",
     }).format(date);

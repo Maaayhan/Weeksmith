@@ -100,7 +100,34 @@ export async function saveVision(
     tags: payload.tags,
   };
 
-  const { error } = await (supabase.from("vision") as any).upsert(upsertPayload);
+  let error;
+  let freshVisionRaw;
+  
+  if (existingVision) {
+    // Update existing record
+    const { data: updatedData, error: updateError } = await (supabase.from("vision") as any)
+      .update({
+        daily: payload.daily,
+        weekly: payload.weekly,
+        year: payload.year,
+        life: payload.life,
+        tags: payload.tags,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("user_id", userId)
+      .select()
+      .single();
+    error = updateError;
+    freshVisionRaw = updatedData;
+  } else {
+    // Insert new record
+    const { data: insertedData, error: insertError } = await (supabase.from("vision") as any)
+      .insert(upsertPayload)
+      .select()
+      .single();
+    error = insertError;
+    freshVisionRaw = insertedData;
+  }
 
   if (error) {
     console.error("Failed to save vision", error);
@@ -110,11 +137,25 @@ export async function saveVision(
     };
   }
 
-  const { data: freshVisionRaw } = await supabase
+  const { data: fetchedData, error: fetchError } = await supabase
     .from("vision")
     .select("*")
     .eq("user_id", userId)
     .maybeSingle();
+  
+  if (fetchError) {
+    console.error("Failed to fetch saved vision", fetchError);
+    // If fetch fails but we have freshVisionRaw, use it as fallback
+    if (!freshVisionRaw) {
+      return {
+        status: "error",
+        message: "We could not verify your vision was saved. Please refresh the page.",
+      };
+    }
+  } else {
+    // Use fetched data as it's guaranteed to be fresh
+    freshVisionRaw = fetchedData;
+  }
 
   const freshVision = freshVisionRaw as
     | Database["public"]["Tables"]["vision"]["Row"]
