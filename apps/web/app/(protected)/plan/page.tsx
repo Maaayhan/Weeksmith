@@ -42,6 +42,7 @@ export default async function PlanPage() {
     .maybeSingle();
 
   const cycle = cycleRaw as Database["public"]["Tables"]["cycle"]["Row"] | null;
+  const currentWeek = cycle?.current_week ?? 1; // Get current execution week
 
   const { data: goalsRaw } = cycle?.id
     ? await supabase
@@ -75,18 +76,32 @@ export default async function PlanPage() {
     lockedAfterWeek = lockedFromPlan;
   }
 
-  const initialEntries = Array.from({ length: 12 }, (_, index) => {
+  // Helper function to determine if a week is locked based on current execution progress
+  const isWeekLocked = (weekNo: number, currentWeek: number, lockedAfterWeek: number): boolean => {
+    // Lock weeks 7-12 only when we've reached week 7 or later
+    return currentWeek >= 7 && weekNo > lockedAfterWeek;
+  };
+
+  // Group plan items by week and build week entries with multiple tasks
+  const initialWeeks = Array.from({ length: 12 }, (_, index) => {
     const weekNo = index + 1;
-    const existing = planItems.find((item) => item.weekly_plan?.week_no === weekNo);
-    const lockedThreshold = existing?.weekly_plan?.locked_after_week ?? lockedAfterWeek;
+    // Get all tasks for this week
+    const weekTasks = planItems.filter((item) => item.weekly_plan?.week_no === weekNo);
+    
+    // Convert to PlanTaskItem format (no qty/unit needed)
+    const tasks = weekTasks.map((item) => ({
+      id: item.id,
+      goalType: (item.goal?.type as "personal" | "professional") ?? "personal",
+      task: item.notes ?? "",
+    }));
+
+    // Determine if this week is locked based on current execution progress
+    const locked = isWeekLocked(weekNo, currentWeek, lockedAfterWeek);
+
     return {
       weekNo,
-      goalType: (existing?.goal?.type as "personal" | "professional") ?? "personal",
-      task: existing?.notes ?? "",
-      qty: Number(existing?.qty ?? 0),
-      unit: existing?.unit ?? "sessions",
-      existingId: existing?.id ?? undefined,
-      locked: weekNo > lockedThreshold && !!existing,
+      tasks,
+      locked,
     };
   });
 
@@ -95,8 +110,9 @@ export default async function PlanPage() {
       <section className="section-card plan-section">
         <PlanBuilder
           initialGoals={{ personal: personalGoal, professional: professionalGoal }}
-          initialEntries={initialEntries}
+          initialWeeks={initialWeeks}
           lockedAfterWeek={lockedAfterWeek}
+          currentWeek={currentWeek}
           visionTags={visionTags}
         />
       </section>

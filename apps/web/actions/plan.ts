@@ -102,11 +102,22 @@ export async function savePlan(
     };
   }
 
-  const kpiIssues = validated.data.entries.filter((entry) => hasKpiLanguage(entry.task));
+  // Check for KPI language in all tasks across all weeks
+  const kpiIssues: Array<{ weekNo: number; taskIndex: number; task: string }> = [];
+  for (const week of validated.data.weeks) {
+    for (let taskIndex = 0; taskIndex < week.tasks.length; taskIndex++) {
+      const task = week.tasks[taskIndex];
+      if (hasKpiLanguage(task.task)) {
+        kpiIssues.push({ weekNo: week.weekNo, taskIndex, task: task.task });
+      }
+    }
+  }
+
   if (kpiIssues.length) {
     const fieldErrors: Partial<Record<string, string>> = {};
     for (const issue of kpiIssues) {
-      fieldErrors[`week-${issue.weekNo}`] = buildRewriteSuggestion(issue.task);
+      const fieldPath = `weeks.${issue.weekNo - 1}.tasks.${issue.taskIndex}.task`;
+      fieldErrors[fieldPath] = buildRewriteSuggestion(issue.task);
     }
     return {
       status: "error",
@@ -202,67 +213,175 @@ export async function savePlan(
     weekly_plan?: { week_no?: number | null; locked_after_week?: number | null } | null;
   })[];
 
-  for (const entry of validated.data.entries) {
-    const plan = weeklyMap[entry.weekNo];
+  // Get current week for lock validation
+  const currentWeek = cycle.current_week;
+
+  // Process each week and its tasks
+  for (const weekEntry of validated.data.weeks) {
+    const plan = weeklyMap[weekEntry.weekNo];
     if (!plan) {
-      return { status: "error", message: `Weekly plan missing for week ${entry.weekNo}.` };
+      return { status: "error", message: `Weekly plan missing for week ${weekEntry.weekNo}.` };
     }
 
-    const goal = goalByType[entry.goalType];
-    if (!goal) {
-      return { status: "error", message: `Goal missing for ${entry.goalType}.` };
-    }
-
-    const existing = existingItems.find((item) => item.weekly_plan?.week_no === entry.weekNo);
-
-    const lockedAfter = plan.lockedAfter;
-    if (entry.weekNo > lockedAfter && existing) {
-      const unchanged =
-        Number(existing.qty) === entry.qty &&
-        existing.unit === entry.unit &&
-        (existing.notes ?? "") === entry.task.trim() &&
-        existing.goal_id === goal.id;
-      if (!unchanged) {
+    // Check if week is locked based on current execution progress
+    const isLocked = currentWeek >= 7 && weekEntry.weekNo > validated.data.lockedAfterWeek;
+    if (isLocked) {
+      // For locked weeks, verify no changes were made
+      const existingWeekItems = existingItems.filter((item) => item.weekly_plan?.week_no === weekEntry.weekNo);
+      
+      // Check 1: Total task count must match (prevents adding new tasks)
+      if (weekEntry.tasks.length !== existingWeekItems.length) {
         return {
           status: "error",
-          message: `Week ${entry.weekNo} is locked after week ${lockedAfter}.`,
-          fieldErrors: { [`week-${entry.weekNo}`]: "Locked — quotas after week 6 are read-only." },
+          message: `Week ${weekEntry.weekNo} is locked. Cannot add or remove tasks.`,
+          fieldErrors: {
+            [`week-${weekEntry.weekNo}`]: `Locked: You're in week ${currentWeek}, weeks 7-12 cannot be modified.`,
+          },
         };
+      }
+
+      // Check 2: All tasks must have IDs (no new tasks allowed)
+      const tasksWithoutIds = weekEntry.tasks.filter((t) => !t.id);
+      if (tasksWithoutIds.length > 0) {
+        return {
+          status: "error",
+          message: `Week ${weekEntry.weekNo} is locked. Cannot add new tasks.`,
+          fieldErrors: {
+            [`week-${weekEntry.weekNo}`]: `Locked: You're in week ${currentWeek}, weeks 7-12 cannot be modified.`,
+          },
+        };
+      }
+
+      // Check 3: All task IDs must exist in existing items (prevents ID manipulation)
+      const existingTaskIds = new Set(existingWeekItems.map((item) => item.id));
+      const submittedTaskIds = new Set(weekEntry.tasks.map((t) => t.id!));
+      const hasUnknownIds = [...submittedTaskIds].some((id) => !existingTaskIds.has(id));
+      if (hasUnknownIds) {
+        return {
+          status: "error",
+          message: `Week ${weekEntry.weekNo} is locked. Invalid task IDs detected.`,
+          fieldErrors: {
+            [`week-${weekEntry.weekNo}`]: `Locked: You're in week ${currentWeek}, weeks 7-12 cannot be modified.`,
+          },
+        };
+      }
+
+      // Check 4: Verify no existing tasks were modified
+      for (const task of weekEntry.tasks) {
+        if (!task.id) {
+          // This should never happen due to Check 2, but double-check
+          return {
+            status: "error",
+            message: `Week ${weekEntry.weekNo} is locked. Invalid task data.`,
+            fieldErrors: {
+              [`week-${weekEntry.weekNo}`]: `Locked: You're in week ${currentWeek}, weeks 7-12 cannot be modified.`,
+            },
+          };
+        }
+
+        const existing = existingWeekItems.find((item) => item.id === task.id);
+        if (!existing) {
+          // This should never happen due to Check 3, but double-check
+          return {
+            status: "error",
+            message: `Week ${weekEntry.weekNo} is locked. Task not found.`,
+            fieldErrors: {
+              [`week-${weekEntry.weekNo}`]: `Locked: You're in week ${currentWeek}, weeks 7-12 cannot be modified.`,
+            },
+          };
+        }
+
+        const goal = goalByType[task.goalType];
+        if (!goal) {
+          return { status: "error", message: `Goal missing for ${task.goalType}.` };
+        }
+
+        const unchanged =
+          (existing.notes ?? "") === task.task.trim() &&
+          existing.goal_id === goal.id;
+        if (!unchanged) {
+          return {
+            status: "error",
+            message: `Week ${weekEntry.weekNo} is locked. Cannot modify tasks.`,
+            fieldErrors: {
+              [`week-${weekEntry.weekNo}`]: `Locked: You're in week ${currentWeek}, weeks 7-12 cannot be modified.`,
+            },
+          };
+        }
+      }
+
+      // If we reach here, locked week is valid - skip processing (tasks unchanged)
+      continue;
+    }
+
+    // Process each task in the week (only for unlocked weeks)
+    for (const task of weekEntry.tasks) {
+      const goal = goalByType[task.goalType];
+      if (!goal) {
+        return { status: "error", message: `Goal missing for ${task.goalType}.` };
+      }
+
+      const existing = task.id
+        ? existingItems.find((item) => item.id === task.id)
+        : undefined;
+
+      const payload: Database["public"]["Tables"]["plan_item"]["Insert"] = {
+        id: existing?.id ?? task.id,
+        plan_id: plan.id,
+        goal_id: goal.id,
+        task_id: null,
+        unit: "count", // Default unit since we don't use qty/unit anymore
+        qty: 1, // Default qty since we don't use qty/unit anymore
+        notes: task.task.trim(),
+        status: existing?.status ?? "planned",
+      } as any;
+
+      const { error } = await supabase.from("plan_item").upsert(payload);
+      if (error) {
+        console.error("Failed to upsert plan item", { error, payload });
+        return { status: "error", message: `Could not save week ${weekEntry.weekNo}, task ${task.task}.` };
       }
     }
 
-    const payload: Database["public"]["Tables"]["plan_item"]["Insert"] = {
-      id: existing?.id ?? entry.existingId,
-      plan_id: plan.id,
-      goal_id: goal.id,
-      task_id: null,
-      unit: entry.unit.trim(),
-      qty: entry.qty,
-      notes: entry.task.trim(),
-      status: existing?.status ?? "planned",
-    } as any;
+    // Remove tasks that were deleted (only for unlocked weeks)
+    if (!isLocked) {
+      const existingWeekItems = existingItems.filter((item) => item.weekly_plan?.week_no === weekEntry.weekNo);
+      const currentTaskIds = new Set(weekEntry.tasks.filter((t) => t.id).map((t) => t.id!));
+      const toDelete = existingWeekItems.filter((item) => !currentTaskIds.has(item.id));
 
-    const { error } = await supabase.from("plan_item").upsert(payload);
-    if (error) {
-      console.error("Failed to upsert plan item", { error, payload });
-      return { status: "error", message: `Could not save week ${entry.weekNo}.` };
+      for (const itemToDelete of toDelete) {
+        const { error } = await supabase.from("plan_item").delete().eq("id", itemToDelete.id);
+        if (error) {
+          console.error("Failed to delete plan item", { error, id: itemToDelete.id });
+        }
+      }
     }
   }
 
   for (const copy of validated.data.copies) {
-    const before = existingItems.find((item) => item.weekly_plan?.week_no === copy.toWeek);
-    const after = validated.data.entries.find((entry) => entry.weekNo === copy.toWeek);
+    const beforeItems = existingItems.filter((item) => item.weekly_plan?.week_no === copy.toWeek);
+    const afterWeek = validated.data.weeks.find((week) => week.weekNo === copy.toWeek);
     await recordAuditLog({
       action: "plan.copy_to_week",
       actorType: "user",
       actorUserId: userId,
       subjectUserId: userId,
       correlationId,
-      beforeState: before
-        ? { week: copy.toWeek, qty: before.qty, unit: before.unit, notes: before.notes }
+      beforeState: beforeItems.length > 0
+        ? {
+            week: copy.toWeek,
+            tasks: beforeItems.map((item) => ({
+              notes: item.notes,
+            })),
+          }
         : null,
-      afterState: after
-        ? { week: copy.toWeek, qty: after.qty, unit: after.unit, notes: after.task }
+      afterState: afterWeek
+        ? {
+            week: copy.toWeek,
+            tasks: afterWeek.tasks.map((task) => ({
+              notes: task.task,
+            })),
+          }
         : null,
       rationale: copy.rationale ?? null,
       ...requestMetadata,
