@@ -28,13 +28,13 @@ export function computeCompletionInsights(items: ProgressInput[]): CompletionIns
 
   const completionPct = totals.total === 0 ? 0 : Math.round((totals.completed / totals.total) * 100);
 
-  if (completionPct < 80) {
+  if (completionPct < 85) {
     return {
       completionPct,
       totalQty: totals.total,
       completedQty: totals.completed,
       zone: "low",
-      guidance: "Below 80% — shrink the scope or reduce frequency to stay in the learning zone.",
+      guidance: "Below 85% — goals were too hard. Reduce scope or frequency to reach the 85% learning zone.",
     };
   }
 
@@ -44,7 +44,7 @@ export function computeCompletionInsights(items: ProgressInput[]): CompletionIns
       totalQty: totals.total,
       completedQty: totals.completed,
       zone: "high",
-      guidance: "Above 90% — add challenge or volume to push back into the 80–90% band.",
+      guidance: "Above 90% — goals were too easy. Add challenge or volume to push back into the 85–90% band.",
     };
   }
 
@@ -53,6 +53,6 @@ export function computeCompletionInsights(items: ProgressInput[]): CompletionIns
     totalQty: totals.total,
     completedQty: totals.completed,
     zone: "target",
-    guidance: "Great pace — 80–90% completion is the optimal learning zone.",
+    guidance: "Great pace — 85% is the optimal learning zone. You're learning effectively without getting lost.",
   };
 }

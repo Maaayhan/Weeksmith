@@ -71,6 +71,24 @@ export default async function DashboardPage() {
 
   const cycle = cycleRaw as Database["public"]["Tables"]["cycle"]["Row"] | null;
   const weekNo = cycle?.current_week ?? 1;
+  const cycleStartDate = cycle?.start_date ? new Date(cycle.start_date) : null;
+
+  // Compute current week's elapsed percentage based on the 12-week cycle start date
+  let weekProgressPct = 0;
+  if (cycleStartDate) {
+    const addDays = (date: Date, days: number) => {
+      const d = new Date(date.getTime());
+      d.setDate(d.getDate() + days);
+      return d;
+    };
+    const startOfCurrentWeek = addDays(cycleStartDate, (weekNo - 1) * 7);
+    const startOfNextWeek = addDays(cycleStartDate, weekNo * 7);
+    const now = new Date();
+    const progress =
+      (now.getTime() - startOfCurrentWeek.getTime()) /
+      Math.max(1, startOfNextWeek.getTime() - startOfCurrentWeek.getTime());
+    weekProgressPct = Math.min(100, Math.max(0, Math.round(progress * 100)));
+  }
 
   const { data: weeklyPlanRaw } = cycle?.id
     ? await supabase
@@ -126,6 +144,7 @@ export default async function DashboardPage() {
           initialMode={planMode}
           items={weekItems}
           obstacles={obstacles}
+          weekProgressPct={weekProgressPct}
         />
       </section>
     </main>

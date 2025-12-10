@@ -49,11 +49,12 @@ Welcome to Weeksmith! This guide will help you get started with your 12-week tra
 - **Weeks 1-6**: Adjustable - you can modify quotas and tasks
 - **Weeks 7-12**: Locked - quotas cannot be changed (only execution tracking)
 
-### The 85% Sweet Spot
-- Target **80-90% completion rate** each week
-- Below 80%: Consider reducing scope or frequency
-- Above 90%: Consider adding challenge or volume
-- This range represents the optimal learning zone
+### The 85% Rule
+- Target **85% completion rate** each week (the optimal learning zone)
+- Below 85%: Goals were too hard — reduce scope or frequency to reach 85%
+- 85-90%: Optimal learning zone — you're learning effectively without getting lost
+- Above 90%: Goals were too easy — add challenge or volume to push back into 85-90%
+- This percentage helps you calibrate weekly goals over time
 
 ## Features
 
@@ -112,9 +113,9 @@ Welcome to Weeksmith! This guide will help you get started with your 12-week tra
 #### Completion Gauge
 - Visual indicator showing your completion percentage
 - Color-coded zones:
-  - 🔴 Below 80%: "Consider reducing scope"
-  - 🟢 80-90%: "Optimal learning zone"
-  - 🟡 Above 90%: "Consider adding challenge"
+  - 🔴 Below 85%: "Goals were too hard — reduce scope or frequency"
+  - 🟢 85-90%: "Optimal learning zone — 85% is the target"
+  - 🟡 Above 90%: "Goals were too easy — add challenge or volume"
 
 #### Progress Tracking
 - Update task status: Planned → In Progress → Completed → Skipped
@@ -187,7 +188,7 @@ Welcome to Weeksmith! This guide will help you get started with your 12-week tra
 ### Execution
 - **Check Dashboard Daily**: Regular updates keep you accountable
 - **Log Obstacles Immediately**: Don't wait - capture friction when it happens
-- **Celebrate 80-90%**: This is the sweet spot, not 100%
+- **Aim for 85%**: This is the optimal learning zone, not 100%
 - **Use Time Blocking for Structure**: If you need structure, use time blocks
 - **Use Priority Queue for Flexibility**: If you need flexibility, use the queue
 
@@ -203,14 +204,16 @@ Welcome to Weeksmith! This guide will help you get started with your 12-week tra
 - **Check**: Are all tasks input-based (no KPIs like followers, revenue)?
 - **Check**: Are you trying to modify Weeks 7-12? (They're locked)
 
-### "My completion is below 80%"
-- **Action**: Reduce quantity or frequency for next week
+### "My completion is below 85%"
+- **Action**: Goals were too hard — reduce quantity or frequency for next week
 - **Action**: Break tasks into smaller chunks
 - **Action**: Review obstacles to identify blockers
+- **Goal**: Adjust to reach 85% completion rate
 
 ### "My completion is above 90%"
-- **Action**: Consider adding challenge or volume
+- **Action**: Goals were too easy — consider adding challenge or volume
 - **Action**: This might indicate you're ready for more
+- **Goal**: Push back into the 85-90% band
 
 ### "I can't change Week 7+ quotas"
 - **This is by design**: Weeks 7-12 are locked to prevent second-guessing
@@ -258,5 +261,5 @@ For issues or questions:
 
 ---
 
-**Remember**: The goal isn't perfection - it's staying in the 80-90% completion zone and learning from each cycle. Trust the process, track honestly, and adjust when needed (Weeks 1-6 only)!
+**Remember**: The goal isn't perfection - it's aiming for 85% completion (the optimal learning zone) and learning from each cycle. Trust the process, track honestly, and adjust when needed (Weeks 1-6 only)!
 

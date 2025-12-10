@@ -8,7 +8,7 @@ describe("computeCompletionInsights", () => {
     expect(insight.zone).toBe("low");
   });
 
-  it("flags under 80% as low zone with guidance", () => {
+  it("flags under 85% as low zone with guidance", () => {
     const insight = computeCompletionInsights([
       { qty: 5, completedQty: 2, status: "in_progress" },
       { qty: 5, completedQty: 2, status: "planned" },
@@ -16,7 +16,7 @@ describe("computeCompletionInsights", () => {
 
     expect(insight.completionPct).toBe(40);
     expect(insight.zone).toBe("low");
-    expect(insight.guidance).toContain("Below 80%");
+    expect(insight.guidance).toContain("Below 85%");
   });
 
   it("flags over 90% as high zone with guidance to add challenge", () => {
@@ -30,14 +30,15 @@ describe("computeCompletionInsights", () => {
     expect(insight.guidance).toContain("Above 90%");
   });
 
-  it("keeps values within the target zone when between 80 and 90", () => {
+  it("keeps values within the target zone when between 85 and 90", () => {
     const insight = computeCompletionInsights([
-      { qty: 5, completedQty: 4, status: "completed" },
-      { qty: 5, completedQty: 4, status: "in_progress" },
+      { qty: 10, completedQty: 9, status: "completed" },
+      { qty: 10, completedQty: 8, status: "in_progress" },
     ]);
 
-    expect(insight.completionPct).toBe(80);
+    expect(insight.completionPct).toBe(85);
     expect(insight.zone).toBe("target");
+    expect(insight.guidance).toContain("85%");
     expect(insight.guidance).toContain("optimal");
   });
 });

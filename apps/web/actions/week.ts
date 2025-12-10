@@ -3,19 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import type { Database, PlanMode } from "@weeksmith/schemas";
+import type { Database } from "@weeksmith/schemas";
 import { createServerActionSupabaseClient } from "@/lib/supabase/server";
 import { recordAuditLog } from "@/lib/security/audit";
 import { getCorrelationId, getRequestMetadata } from "@/lib/security/correlation";
-
-export type WeekActionState = {
-  status: "idle" | "success" | "error";
-  message?: string;
-  fieldErrors?: Partial<Record<string, string>>;
-  mode?: PlanMode;
-};
-
-export const initialWeekState: WeekActionState = { status: "idle" };
+import type { WeekActionState } from "./week-shared";
 
 const modeSchema = z.object({
   weeklyPlanId: z.string().uuid(),
